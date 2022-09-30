@@ -11,6 +11,8 @@ public class PlayerMotor : MonoBehaviour
     public float moveSpeed = 8.0f;
     public float sprintSpeed = 12.0f;
     public float jumpForce = 5.0f;
+    public Camera playerCamera;
+    public float gravityMultiplier = 3.0f;
 
     [Header("Ground Check Options")]
     public float groundRayLength = 1.5f;
@@ -57,11 +59,17 @@ public class PlayerMotor : MonoBehaviour
     {
         // combine forces
         Vector3 baseMove = moveWish * (sprintWish ? sprintSpeed : moveSpeed);
+
+        if (playerCamera != null)
+        {
+            baseMove = Quaternion.AngleAxis(playerCamera.transform.rotation.eulerAngles.y, Vector3.up) * baseMove;
+        }
         
         // integrate gravity
-        yVelocity += Physics.gravity.y * Time.deltaTime;
+        yVelocity += Physics.gravity.y * gravityMultiplier * Time.deltaTime;
 
         // check for jump
+        bool jumpedThisFrame = false;
         if (jumpWish)
         {
             jumpWish = false;
@@ -70,6 +78,7 @@ public class PlayerMotor : MonoBehaviour
             {
                 yVelocity = jumpForce;
                 isGrounded = false;
+                jumpedThisFrame = true;
             }
         }
 
@@ -88,8 +97,13 @@ public class PlayerMotor : MonoBehaviour
         }
 
         // apply the movement to the motor
-        CollisionFlags moveFlags = motor.Move(finalMove * Time.deltaTime);
-        moveFlags |= motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+        CollisionFlags moveFlags = motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+        if(jumpedThisFrame)
+        {
+            // ignore ground collision event if we just jumped
+            moveFlags &= ~CollisionFlags.CollidedBelow;
+        }
+        moveFlags |= motor.Move(finalMove * Time.deltaTime);
 
         // if, while moving, we bump into something below us...
         if ((CollisionFlags.Below & moveFlags) != 0 || isGrounded)
