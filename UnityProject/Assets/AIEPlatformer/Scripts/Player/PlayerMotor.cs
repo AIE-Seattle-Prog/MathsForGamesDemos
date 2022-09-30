@@ -7,29 +7,51 @@ public class PlayerMotor : MonoBehaviour
     [SerializeField]
     private CharacterController motor;
 
+    [Header("Movement Options")]
     public float moveSpeed = 8.0f;
+    public float sprintSpeed = 12.0f;
     public float jumpForce = 5.0f;
     public float groundRayLength = 1.5f;
     public LayerMask groundMask = ~0;
 
+    [Header("Rotation Options")]
+    public float rotationSpeed = 180.0f;
+
     private Vector3 moveWish;
     private bool jumpWish;
+    private bool sprintWish;
+
     private float yVelocity;
 
-    private bool wasGrounded;
+    private Vector3 desiredForward;
+
+    public void Teleport(Vector3 newPosition)
+    {
+        motor.enabled = false;
+        transform.position = newPosition;
+        motor.enabled = true;
+    }
 
     private void Update()
     {
         moveWish = new Vector3(Input.GetAxisRaw("Horizontal"),
                                0.0f,
                                Input.GetAxisRaw("Vertical"));
+        moveWish = Vector3.ClampMagnitude(moveWish, 1);
+
         jumpWish = jumpWish || Input.GetButtonDown("Jump");
+        sprintWish = Input.GetButton("Sprint");
+
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            Teleport(new Vector3(0, 1, 0));
+        }
     }
 
     private void FixedUpdate()
     {
         // combine forces
-        Vector3 baseMove = moveWish * moveSpeed;
+        Vector3 baseMove = moveWish * (sprintWish ? sprintSpeed : moveSpeed);
         yVelocity += Physics.gravity.y * Time.deltaTime;
 
         // reset yVelocity if grounded
@@ -50,21 +72,37 @@ public class PlayerMotor : MonoBehaviour
         }
 
         // reorient the movement onto the current ground normal
-        if(Physics.SphereCast(transform.position, // location of the start of the ray
-                            0.5f,
+        if (Physics.Raycast(transform.position,              // location of the start of the ray
                            Vector3.down,                    // direction to shoot the ray in
                            out RaycastHit hit,              // data about the thing that the ray hit
                            groundRayLength,                 // how far (aka the magnitude of the ray)
                            groundMask,                      // which types of objects to hit?
                            QueryTriggerInteraction.Ignore)) // whether we should include or ignore triggers?
         {
-            float angle = Vector3.Angle(Vector3.up, hit.normal);
-            Debug.Log(angle);
             baseMove = Vector3.ProjectOnPlane(baseMove, hit.normal);
         }
 
         // apply the movement to the motor
-        var flags = motor.Move((baseMove + new Vector3(0, yVelocity, 0)) * Time.deltaTime);
-        wasGrounded = motor.isGrounded;
+        motor.Move(baseMove * Time.deltaTime);
+        motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+
+        if(baseMove.magnitude != 0.0f)
+        {
+            // record the direction I want to face
+            desiredForward = baseMove.normalized;
+        }
+
+        // apply the rotation
+        transform.forward = Vector3.RotateTowards(transform.forward,    // direction I am currently facing
+            desiredForward,                                             // direction I want to face
+            rotationSpeed * Mathf.Deg2Rad * Time.deltaTime,             // max change in radians
+            0.0f);                                                      // max change in magnitude (none!)
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.blue;
+
+        Gizmos.DrawRay(transform.position, desiredForward * 5.0f);
     }
 }
