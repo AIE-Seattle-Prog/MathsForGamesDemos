@@ -11,8 +11,11 @@ public class PlayerMotor : MonoBehaviour
     public float moveSpeed = 8.0f;
     public float sprintSpeed = 12.0f;
     public float jumpForce = 5.0f;
+
+    [Header("Ground Check Options")]
     public float groundRayLength = 1.5f;
     public LayerMask groundMask = ~0;
+    private Vector3 groundNormal = Vector3.up;
 
     [Header("Rotation Options")]
     public float rotationSpeed = 180.0f;
@@ -24,6 +27,8 @@ public class PlayerMotor : MonoBehaviour
     private float yVelocity;
 
     private Vector3 desiredForward;
+
+    private bool isGrounded;
 
     public void Teleport(Vector3 newPosition)
     {
@@ -52,43 +57,62 @@ public class PlayerMotor : MonoBehaviour
     {
         // combine forces
         Vector3 baseMove = moveWish * (sprintWish ? sprintSpeed : moveSpeed);
+        
+        // integrate gravity
         yVelocity += Physics.gravity.y * Time.deltaTime;
-
-        // reset yVelocity if grounded
-        if (motor.isGrounded)
-        {
-            yVelocity = Physics.gravity.y * Time.deltaTime;
-        }
 
         // check for jump
         if (jumpWish)
         {
             jumpWish = false;
 
-            if (motor.isGrounded)
+            if (isGrounded)
             {
                 yVelocity = jumpForce;
+                isGrounded = false;
             }
         }
 
-        // reorient the movement onto the current ground normal
-        if (Physics.Raycast(transform.position,              // location of the start of the ray
+        // reset yVelocity if grounded
+        if (isGrounded)
+        {
+            yVelocity = Physics.gravity.y * Time.deltaTime;
+        }
+
+        Vector3 finalMove = baseMove;
+
+        // reorient the movement onto the current ground normal if grounded
+        if(isGrounded)
+        {
+            finalMove = Vector3.ProjectOnPlane(baseMove, groundNormal);
+        }
+
+        // apply the movement to the motor
+        CollisionFlags moveFlags = motor.Move(finalMove * Time.deltaTime);
+        moveFlags |= motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+
+        // if, while moving, we bump into something below us...
+        if ((CollisionFlags.Below & moveFlags) != 0 || isGrounded)
+        {
+            if (Physics.Raycast(transform.position,              // location of the start of the ray
                            Vector3.down,                    // direction to shoot the ray in
                            out RaycastHit hit,              // data about the thing that the ray hit
                            groundRayLength,                 // how far (aka the magnitude of the ray)
                            groundMask,                      // which types of objects to hit?
                            QueryTriggerInteraction.Ignore)) // whether we should include or ignore triggers?
-        {
-            baseMove = Vector3.ProjectOnPlane(baseMove, hit.normal);
+            {
+                isGrounded = Vector3.Angle(hit.normal, Vector3.up) < motor.slopeLimit;
+                groundNormal = hit.normal;
+            }
+            else
+            {
+                isGrounded = false;
+            }
         }
 
-        // apply the movement to the motor
-        motor.Move(baseMove * Time.deltaTime);
-        motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
-
-        if(baseMove.magnitude != 0.0f)
+        // record the direction I want to face
+        if (baseMove.magnitude != 0.0f)
         {
-            // record the direction I want to face
             desiredForward = baseMove.normalized;
         }
 
