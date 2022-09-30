@@ -16,7 +16,7 @@ namespace MathLibrary
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public Vector3(float x, float y, float z)
+        public Vector3(float x, float y, float z=0)
         {
             this.x = x;
             this.y = y;
@@ -190,9 +190,9 @@ namespace MathLibrary
         /// <returns>True if approximately equal, false if not</returns>
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
-            if(MathF.Abs(lhs.x - rhs.x) < 0.0000001 &&
-               MathF.Abs(lhs.y - rhs.y) < 0.0000001 &&
-               MathF.Abs(lhs.z - rhs.z) < 0.0000001)
+            if(MathF.Abs(lhs.x - rhs.x) < 0.0001 &&
+               MathF.Abs(lhs.y - rhs.y) < 0.0001 &&
+               MathF.Abs(lhs.z - rhs.z) < 0.0001)
             {
                 return true;
             }

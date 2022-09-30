@@ -16,6 +16,8 @@ public class PlayerMotor : MonoBehaviour
     private bool jumpWish;
     private float yVelocity;
 
+    private bool wasGrounded;
+
     private void Update()
     {
         moveWish = new Vector3(Input.GetAxisRaw("Horizontal"),
@@ -48,18 +50,21 @@ public class PlayerMotor : MonoBehaviour
         }
 
         // reorient the movement onto the current ground normal
-        if(Physics.Raycast(transform.position,              // location of the start of the ray
+        if(Physics.SphereCast(transform.position, // location of the start of the ray
+                            0.5f,
                            Vector3.down,                    // direction to shoot the ray in
                            out RaycastHit hit,              // data about the thing that the ray hit
                            groundRayLength,                 // how far (aka the magnitude of the ray)
                            groundMask,                      // which types of objects to hit?
                            QueryTriggerInteraction.Ignore)) // whether we should include or ignore triggers?
         {
+            float angle = Vector3.Angle(Vector3.up, hit.normal);
+            Debug.Log(angle);
             baseMove = Vector3.ProjectOnPlane(baseMove, hit.normal);
         }
 
         // apply the movement to the motor
-        motor.Move(baseMove * Time.deltaTime);
-        motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+        var flags = motor.Move((baseMove + new Vector3(0, yVelocity, 0)) * Time.deltaTime);
+        wasGrounded = motor.isGrounded;
     }
 }
