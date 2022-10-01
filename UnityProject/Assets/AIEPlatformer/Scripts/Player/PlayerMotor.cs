@@ -11,6 +11,10 @@ public class PlayerMotor : MonoBehaviour
     public float moveSpeed = 8.0f;
     public float sprintSpeed = 12.0f;
     public float jumpForce = 5.0f;
+    public float gravityMultiplier = 3.0f;
+    public int airJumpsAllowed = 1;
+
+    private int airJumpsUsed = 0;
 
     [Header("Ground Check Options")]
     public float groundRayLength = 1.5f;
@@ -37,6 +41,11 @@ public class PlayerMotor : MonoBehaviour
         motor.enabled = true;
     }
 
+    public void ResetAirJumps()
+    {
+        airJumpsUsed = 0;
+    }
+
     private void Update()
     {
         moveWish = new Vector3(Input.GetAxisRaw("Horizontal"),
@@ -59,17 +68,23 @@ public class PlayerMotor : MonoBehaviour
         Vector3 baseMove = moveWish * (sprintWish ? sprintSpeed : moveSpeed);
         
         // integrate gravity
-        yVelocity += Physics.gravity.y * Time.deltaTime;
+        yVelocity += Physics.gravity.y * gravityMultiplier * Time.deltaTime;
 
         // check for jump
         if (jumpWish)
         {
             jumpWish = false;
 
+            // ground jumping
             if (isGrounded)
             {
                 yVelocity = jumpForce;
                 isGrounded = false;
+            }
+            else if (airJumpsUsed < airJumpsAllowed)
+            {
+                yVelocity = jumpForce;
+                ++airJumpsUsed;
             }
         }
 
@@ -77,6 +92,7 @@ public class PlayerMotor : MonoBehaviour
         if (isGrounded)
         {
             yVelocity = Physics.gravity.y * Time.deltaTime;
+            airJumpsUsed = 0;
         }
 
         Vector3 finalMove = baseMove;
