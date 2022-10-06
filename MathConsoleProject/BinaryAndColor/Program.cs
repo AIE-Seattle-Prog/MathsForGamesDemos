@@ -19,7 +19,7 @@ public class Program
         testButton.position = new Vector3(200, 200);
         testButton.size = new Vector3(150, 50);
 
-        Random random = new Random();
+        System.Random random = new System.Random();
 
         int rngMin = 0;
         int rngMax = 100;

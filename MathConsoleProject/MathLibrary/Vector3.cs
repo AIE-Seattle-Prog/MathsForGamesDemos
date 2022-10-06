@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -182,6 +183,30 @@ namespace MathLibrary
                                vec.z * scalar);  // product of the Zs
         }
 
+        // Equals(Vector3)
+        // Equals(object) - override!
+        // == operator
+        // != operator
+        // GetHashCode()
+        // ToString()
+
+        public bool Equals(Vector3 other)
+        {
+            if (MathF.Abs(x - other.x) < 0.0001 &&
+                MathF.Abs(y - other.y) < 0.0001 &&
+                MathF.Abs(z - other.z) < 0.0001)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj != null && Equals((Vector3)obj);
+        }
+
         /// <summary>
         /// Determines if two vectors are approximately equal
         /// </summary>
@@ -190,14 +215,7 @@ namespace MathLibrary
         /// <returns>True if approximately equal, false if not</returns>
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
-            if(MathF.Abs(lhs.x - rhs.x) < 0.0001 &&
-               MathF.Abs(lhs.y - rhs.y) < 0.0001 &&
-               MathF.Abs(lhs.z - rhs.z) < 0.0001)
-            {
-                return true;
-            }
-
-            return false;
+            return lhs.Equals(rhs);
         }
 
         /// <summary>
@@ -209,6 +227,17 @@ namespace MathLibrary
         public static bool operator !=(Vector3 lhs, Vector3 rhs)
         {
             return !(lhs == rhs);
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = new HashCode();
+
+            hash.Add(x);
+            hash.Add(y);
+            hash.Add(z);
+
+            return hash.ToHashCode();
         }
 
         public override string ToString()
