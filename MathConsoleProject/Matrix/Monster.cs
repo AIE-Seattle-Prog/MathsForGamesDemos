@@ -21,28 +21,39 @@ namespace Matrix
             float xMove = 0.0f;
             float yMove = 0.0f;
 
+            const float MOVESPEED = 20.0f;
+
             // A-D for LEFT-RIGHT movement
             if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
             {
-                xMove -= 10.0f * deltaTime;
+                xMove -= MOVESPEED * deltaTime;
             }
             if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
             {
-                xMove += 10.0f * deltaTime;
+                xMove += MOVESPEED * deltaTime;
             }
 
             // W-S for UP-DOWN movement
             if (Raylib.IsKeyDown(KeyboardKey.KEY_W))
             {
-                yMove -= 10.0f * deltaTime;
+                yMove -= MOVESPEED * deltaTime;
             }
             if (Raylib.IsKeyDown(KeyboardKey.KEY_S))
             {
-                yMove += 10.0f * deltaTime;
+                yMove += MOVESPEED * deltaTime;
             }
 
             // apply the move!
             Translate(xMove, yMove);
+
+            // F for Spawn Minion
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_F))
+            {
+                GameObject minion = GameObjectFactory.MakeSprite("res/chort.png");
+                minion.LocalPosition = LocalPosition;
+
+                Program.Instantiate(minion);
+            }
         }
 
         protected override void OnDraw()
