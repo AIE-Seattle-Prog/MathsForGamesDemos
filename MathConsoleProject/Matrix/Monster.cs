@@ -52,7 +52,7 @@ namespace Matrix
                 GameObject minion = GameObjectFactory.MakeSprite("res/chort.png");
                 minion.LocalPosition = LocalPosition;
 
-                Program.Instantiate(minion);
+                Program.AddRootGameObject(minion);
             }
         }
 

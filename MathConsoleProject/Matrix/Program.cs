@@ -10,14 +10,14 @@ public class Program
     private static List<GameObject> pendingObjects = new List<GameObject>();
     private static List<GameObject> killObjects = new List<GameObject>();
 
-    public static void Instantiate(GameObject newGameObject)
+    public static void AddRootGameObject(GameObject newGameObject)
     {
         pendingObjects.Add(newGameObject);
     }
 
     public static void Destroy(GameObject toDestroy)
     {
-        killObjects.Remove(toDestroy);
+        killObjects.Add(toDestroy);
     }
 
     public static int Main()
