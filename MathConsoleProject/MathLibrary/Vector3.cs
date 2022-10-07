@@ -192,9 +192,9 @@ namespace MathLibrary
 
         public bool Equals(Vector3 other)
         {
-            if (MathF.Abs(x - other.x) < 0.0001 &&
-                MathF.Abs(y - other.y) < 0.0001 &&
-                MathF.Abs(z - other.z) < 0.0001)
+            if (MathUtils.ApproximatelyEqual(x, other.x) &&
+                MathUtils.ApproximatelyEqual(y, other.y) &&
+                MathUtils.ApproximatelyEqual(z, other.z))
             {
                 return true;
             }
