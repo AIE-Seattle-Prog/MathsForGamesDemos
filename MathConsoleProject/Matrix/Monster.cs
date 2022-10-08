@@ -11,10 +11,8 @@ using GameFramework;
 
 namespace Matrix
 {
-    public class Monster : GameObject
+    public class Monster : SpriteObject
     {
-        public Texture2D monsterSprite;
-
         protected override void OnUpdate(float deltaTime)
         {
             // check for key input and move when detected
@@ -43,6 +41,26 @@ namespace Matrix
                 yMove += MOVESPEED * deltaTime;
             }
 
+            // Q-E for CCW and CW (the rotation)
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_Q))
+            {
+                LocalRotation += 5.0f * deltaTime;
+            }
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_E))
+            {
+                LocalRotation -= 5.0f * deltaTime;
+            }
+
+            // 1-3 for SHRINK and GROW (the scale)
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_ONE))
+            {
+                LocalScale -= new Vector3(2.0f, 2.0f, 2.0f) * deltaTime;
+            }
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_THREE))
+            {
+                LocalScale += new Vector3(2.0f, 2.0f, 2.0f) * deltaTime;
+            }
+
             // apply the move!
             Translate(xMove, yMove);
 
@@ -54,18 +72,6 @@ namespace Matrix
 
                 Program.AddRootGameObject(minion);
             }
-        }
-
-        protected override void OnDraw()
-        {
-            // calculate the local transform matrix
-            Matrix3 myTransform = LocalTransform;
-
-            // extract the position
-            Vector3 pos = myTransform.GetTranslation();
-
-            // draw the monster sprite
-            Raylib.DrawTexture(monsterSprite, (int)pos.x, (int)pos.y, Color.WHITE);
         }
     }
 }

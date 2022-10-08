@@ -30,7 +30,17 @@ public class Program
         Raylib.SetTargetFPS(60);
 
         // INITIALIZE GAMEPLAY
-        gameObjects.Add(GameObjectFactory.MakeMonster());
+        GameObject monster = GameObjectFactory.MakeMonster();
+
+        var chort1 = GameObjectFactory.MakeSprite(@"res\chort.png");
+        //chort1.Parent = monster;
+        chort1.LocalPosition = new MathLibrary.Vector3(-20, 0, 1);
+        
+        var chort2 = GameObjectFactory.MakeSprite(@"res\chort.png");
+        //chort2.Parent = monster;
+        chort2.LocalPosition = new MathLibrary.Vector3(+20, 0, 1);
+
+        gameObjects.Add(monster);
 
         bool isPaused = false;
 

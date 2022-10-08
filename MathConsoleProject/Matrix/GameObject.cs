@@ -17,7 +17,43 @@ namespace GameFramework
     {
         public Vector3 LocalPosition { get; set; }
         public float LocalRotation { get; set; }
-        public Vector3 LocalScale { get; set; }
+        public Vector3 LocalScale { get; set; } = new Vector3(1, 1, 1);
+
+        protected GameObject parent = null;
+        public GameObject Parent
+        {
+            get => parent;
+            set
+            {
+                // remove from existing parent if applicable
+                if(parent != null)
+                {
+                    parent.children.Remove(this);
+                }
+
+                // add to our new parent if applicable
+                if(value != null)
+                {
+                    value.children.Add(this);
+                }
+
+                parent = value;
+            }
+        }
+
+        protected List<GameObject> children = new List<GameObject>();
+        public int ChildCount
+        {
+            get
+            {
+                return children.Count;
+            }
+        }
+
+        public GameObject GetChild(int index)
+        {
+            return children[index];
+        }
 
         public Matrix3 LocalTransform
         {
@@ -26,6 +62,22 @@ namespace GameFramework
                 return Matrix3.CreateTranslation(LocalPosition) *
                        Matrix3.CreateRotateZ(LocalRotation) *
                        Matrix3.CreateScale(LocalScale.x, LocalScale.y);
+            }
+        }
+
+        public Matrix3 GlobalTransform
+        {
+            get
+            {
+                // if we have a parent...
+                if(parent != null)
+                {
+                    return parent.GlobalTransform * LocalTransform;
+                }
+                else
+                {
+                    return LocalTransform;
+                }
             }
         }
 
@@ -53,6 +105,11 @@ namespace GameFramework
         {
             // TODO: if we had more stuff to do on Update, we'd do it here ...
             OnUpdate(deltaTime);
+
+            foreach(var child in children)
+            {
+                child.Update(deltaTime);
+            }
         }
 
         // FOR GAMEPLAY USE - gameplay mechanics
@@ -65,6 +122,11 @@ namespace GameFramework
         {
             // TODO: if we had more stuff to do on Draw, we'd do it here ...
             OnDraw();
+
+            foreach(var child in children)
+            {
+                child.Draw();
+            }
         }
 
         protected virtual void OnDraw()

@@ -29,8 +29,15 @@ namespace MathLibrary
 
         // ReverseLerp
 
+        public static float AngleFrom2D(float x, float y)
+        {
+            return MathF.Atan2(y, x);
+        }
+
         // Deg2Rad
+        public const float Deg2Rad = MathF.PI * 2.0f / 360.0f;
 
         // Rad2Deg
+        public const float Rad2Deg = 1.0f / Deg2Rad;
     }
 }

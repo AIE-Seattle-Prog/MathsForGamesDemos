@@ -15,7 +15,7 @@ namespace Matrix
         public static GameObject MakeMonster()
         {
             Monster newMonster = new Monster();
-            newMonster.monsterSprite = Raylib.LoadTexture("res/monster.png");
+            newMonster.sprite = Raylib.LoadTexture("res/monster.png");
 
             return newMonster;
         }
