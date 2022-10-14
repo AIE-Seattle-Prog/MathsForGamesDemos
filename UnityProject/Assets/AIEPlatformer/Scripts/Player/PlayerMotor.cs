@@ -6,6 +6,7 @@ public class PlayerMotor : MonoBehaviour
 {
     [SerializeField]
     private CharacterController motor;
+    public Transform cameraTransform;
 
     [Header("Movement Options")]
     public float moveSpeed = 8.0f;
@@ -64,6 +65,11 @@ public class PlayerMotor : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(cameraTransform != null)
+        {
+            moveWish = Quaternion.AngleAxis(cameraTransform.eulerAngles.y, Vector3.up) * moveWish;
+        }
+
         // combine forces
         Vector3 baseMove = moveWish * (sprintWish ? sprintSpeed : moveSpeed);
         
