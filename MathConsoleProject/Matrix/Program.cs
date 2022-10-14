@@ -41,6 +41,7 @@ public class Program
         chort2.LocalPosition = new MathLibrary.Vector3(+20, 0, 1);
 
         gameObjects.Add(monster);
+        gameObjects.Add(GameObjectFactory.MakeHoverCircle(new MathLibrary.Vector3(128, 128, 0), 58));
 
         bool isPaused = false;
 
