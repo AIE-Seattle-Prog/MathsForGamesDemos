@@ -40,7 +40,11 @@ namespace MathLibrary
         /// </summary>
         public void Normalize()
         {
-            this /= Magnitude;
+            float mag = Magnitude;
+            if (mag != 0)
+            {
+                this /= Magnitude;
+            }
         }
 
         /// <summary>
@@ -50,7 +54,12 @@ namespace MathLibrary
         {
             get
             {
-                return this / Magnitude;
+                float mag = Magnitude;
+                if (mag != 0)
+                {
+                    return this / Magnitude;
+                }
+                return this;
             }
         }
 
@@ -98,6 +107,20 @@ namespace MathLibrary
         public Vector3 Scaled(Vector3 rhs)
         {
             return new Vector3(x * rhs.x, y * rhs.y, z * rhs.z);
+        }
+
+        public static Vector3 ClampMagnitude(Vector3 vec, float maxMagnitude)
+        {
+            float curMag = vec.Magnitude;
+
+            // if the magnitude is too large, rescale the vector
+            if(curMag > maxMagnitude)
+            {
+                return vec.Normalized * maxMagnitude;
+            }
+
+            // if it's fine as-is, return as-is
+            return vec;
         }
 
         /// <summary>
