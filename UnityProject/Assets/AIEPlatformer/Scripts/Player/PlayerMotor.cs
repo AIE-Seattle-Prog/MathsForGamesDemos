@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerMotor : MonoBehaviour
 {
@@ -15,7 +16,10 @@ public class PlayerMotor : MonoBehaviour
     public float gravityMultiplier = 3.0f;
     public int airJumpsAllowed = 1;
 
+    public UnityEvent OnJumped { get; private set; } = new UnityEvent();
+
     private int airJumpsUsed = 0;
+    public Vector3 Velocity { get; private set; }
 
     [Header("Ground Check Options")]
     public float groundRayLength = 1.5f;
@@ -33,7 +37,7 @@ public class PlayerMotor : MonoBehaviour
 
     private Vector3 desiredForward;
 
-    private bool isGrounded;
+    public bool isGrounded { get; private set; }
 
     public void Teleport(Vector3 newPosition)
     {
@@ -86,11 +90,13 @@ public class PlayerMotor : MonoBehaviour
             {
                 yVelocity = jumpForce;
                 isGrounded = false;
+                OnJumped.Invoke();
             }
             else if (airJumpsUsed < airJumpsAllowed)
             {
                 yVelocity = jumpForce;
                 ++airJumpsUsed;
+                OnJumped.Invoke();
             }
         }
 
@@ -113,6 +119,9 @@ public class PlayerMotor : MonoBehaviour
         CollisionFlags moveFlags = motor.Move(finalMove * Time.deltaTime);
         moveFlags |= motor.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
 
+        // record velocity
+        Velocity = new Vector3(finalMove.x, yVelocity, finalMove.z);
+
         // if, while moving, we bump into something below us...
         if ((CollisionFlags.Below & moveFlags) != 0 || isGrounded)
         {
@@ -131,6 +140,10 @@ public class PlayerMotor : MonoBehaviour
                 isGrounded = false;
             }
         }
+        else
+        {
+            isGrounded = false;
+        }
 
         // record the direction I want to face
         if (baseMove.magnitude != 0.0f)
@@ -147,8 +160,8 @@ public class PlayerMotor : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.blue;
+        Gizmos.color = isGrounded ? Color.grey : Color.red;
 
-        Gizmos.DrawRay(transform.position, desiredForward * 5.0f);
+        Gizmos.DrawRay(transform.position, Vector3.down * groundRayLength);
     }
 }
