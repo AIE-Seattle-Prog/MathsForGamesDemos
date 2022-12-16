@@ -1,29 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Raylib_cs;
 
 using MathLibrary;
 using GameFramework;
 
+using Random = MathLibrary.Random;
+
 namespace Matrix
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Monster : SpriteObject
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public Vector3 velocity;
-        public Vector3 acceleration;
+
+        /// <summary>
+        /// Linear drag models the loss of energy due to other forces, such as air resistance.
+        /// <para>The greater this value, the harder it will be to move this object and the faster
+        /// it will slow down, if moving.</para>
+        /// </summary>
         public float drag = 1;
 
         protected override void OnUpdate(float deltaTime)
         {
+            //
+            // MOVEMENT INPUT
+            // 
+
             // check for key input and move when detected
             float xMove = 0.0f;
             float yMove = 0.0f;
-
-            const float ACCEL_SPEED = 75.0f;
 
             // A-D for LEFT-RIGHT movement
             if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
@@ -50,7 +62,8 @@ namespace Matrix
             moveInput = Vector3.ClampMagnitude(moveInput, 1);
 
             // create acceleration - the amount by which we are changing our velocity
-            acceleration = moveInput * ACCEL_SPEED;
+            const float ACCEL_SPEED = 75.0f;
+            Vector3 acceleration = moveInput * ACCEL_SPEED;
 
             // integrating acceleration into velocity
             velocity += acceleration * deltaTime;
@@ -60,6 +73,10 @@ namespace Matrix
 
             // apply the move! - integrate velocity into position
             LocalPosition = LocalPosition + velocity * deltaTime;
+
+            //
+            // GAMEPLAY INPUTS
+            //
 
             // Q-E for CCW and CW (the rotation)
             if (Raylib.IsKeyDown(KeyboardKey.KEY_Q))
@@ -85,9 +102,8 @@ namespace Matrix
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_F))
             {
                 GameObject minion = GameObjectFactory.MakeSprite("res/chort.png");
-                minion.LocalPosition = LocalPosition;
-
-                Program.AddRootGameObject(minion);
+                minion.LocalPosition = new Vector3( Random.Range(-40,40) , Random.Range(-40, 40), 1);
+                minion.Parent = this;
             }
         }
     }

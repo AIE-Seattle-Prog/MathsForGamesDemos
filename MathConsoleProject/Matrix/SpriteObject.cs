@@ -1,32 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-using GameFramework;
-using MathLibrary;
 using Raylib_cs;
 
-namespace Matrix
+using MathLibrary;
+
+namespace GameFramework
 {
+    /// <summary>
+    /// A simple type of GameObject capable of rendering a single sprite at its position with rotation and scaling.
+    /// </summary>
     public class SpriteObject : GameObject
     {
+        /// <summary>
+        /// The sprite that will be drawn by this SpriteObject
+        /// </summary>
         public Texture2D sprite;
 
+        /// <summary>
+        /// The tint applied to the sprite during rendering.
+        /// 
+        /// Defaults to "Color.WHITE" to render the sprite as-is.
+        /// </summary>
+        public Color tint = Color.WHITE;
+
+        /// <summary>
+        /// The point at which the sprite will be drawn and rotated around.
+        /// 
+        /// Given in normalized (0-1) space, where 0.5 is the middle of an axis.
+        /// </summary>
         public Vector3 origin = new Vector3(0.5f, 0.5f, 0.5f);
 
         protected override void OnDraw()
         {
-            // calculate the local transform matrix
+            // calculate the global transform matrix
             Matrix3 myTransform = GlobalTransform;
 
-            // extract the position
-            Vector3 pos = myTransform.GetTranslation();
-            float   rot = MathF.Atan2(myTransform.m2, myTransform.m1) * MathUtils.Rad2Deg;
-            Vector3 scl = new Vector3(new Vector3(myTransform.m1, myTransform.m2, myTransform.m3).Magnitude,
-                                      new Vector3(myTransform.m4, myTransform.m5, myTransform.m6).Magnitude,
-                                      1);
+            // cache each transform property so we only have to retrieve it once
+            Vector3 pos = WorldPosition;
+            float   rot = WorldRotation;
+            Vector3 scl = WorldScale;
 
             // draw the monster sprite
             Raylib.DrawTexturePro(sprite,
@@ -36,9 +49,10 @@ namespace Matrix
                                       sprite.width * scl.x * origin.x,
                                       sprite.height * scl.y * origin.y
                                   ),
-                                  rot,
-                                  Color.WHITE);
+                                  rot * MathUtils.Rad2Deg,
+                                  tint);
 
+            // uncomment to show debug position
             //Raylib.DrawCircle((int)pos.x, (int)pos.y, 5.0f, Color.RED);
         }
     }

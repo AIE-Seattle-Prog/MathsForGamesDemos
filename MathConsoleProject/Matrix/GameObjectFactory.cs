@@ -9,7 +9,7 @@ using Raylib_cs;
 using GameFramework;
 using MathLibrary;
 
-namespace Matrix
+namespace GameFramework
 {
     public static class GameObjectFactory
     {

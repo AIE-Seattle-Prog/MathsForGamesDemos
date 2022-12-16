@@ -1,8 +1,9 @@
-﻿using Raylib_cs;
+﻿using System;
+using System.Collections.Generic;
+
+using Raylib_cs;
 
 using GameFramework;
-
-using Matrix;
 
 public class Program
 {
@@ -10,51 +11,63 @@ public class Program
     private static List<GameObject> pendingObjects = new List<GameObject>();
     private static List<GameObject> killObjects = new List<GameObject>();
 
+    /// <summary>
+    /// Adds a GameObject as a root object in the Update-Draw loop.
+    /// </summary>
+    /// <param name="newGameObject">The object to add to list of all game objects in the game.</param>
     public static void AddRootGameObject(GameObject newGameObject)
     {
         pendingObjects.Add(newGameObject);
     }
 
-    public static void Destroy(GameObject toDestroy)
+    /// <summary>
+    /// Queues a GameObject for removal from the Update-Draw loop.
+    /// </summary>
+    /// <param name="toDestroy"></param>
+    public static void DestroyRootGameObject(GameObject toDestroy)
     {
         killObjects.Add(toDestroy);
     }
 
     public static int Main()
     {
-        // Initializing - LOAD THE THINGS
+        //
+        // INITIALIZE Engine
+        //
         const int screenW = 800;
         const int screenH = 450;
+
+        bool isPaused = false;
 
         Raylib.InitWindow(screenW, screenH, "Raylib");
         Raylib.SetTargetFPS(60);
 
-        // INITIALIZE GAMEPLAY
+        //
+        // INITIALIZE Gameplay
+        //
         GameObject monster = GameObjectFactory.MakeMonster();
-
-        var chort1 = GameObjectFactory.MakeSprite(@"res\chort.png");
-        //chort1.Parent = monster;
-        chort1.LocalPosition = new MathLibrary.Vector3(-20, 0, 1);
-        
-        var chort2 = GameObjectFactory.MakeSprite(@"res\chort.png");
-        //chort2.Parent = monster;
-        chort2.LocalPosition = new MathLibrary.Vector3(+20, 0, 1);
-
+        monster.LocalPosition = new MathLibrary.Vector3(screenW / 2, screenH / 2, 1);
         gameObjects.Add(monster);
-        gameObjects.Add(GameObjectFactory.MakeHoverCircle(new MathLibrary.Vector3(128, 128, 0), 58));
 
-        bool isPaused = false;
-
-        // Game Loop - PLAY THE GAME
+        // PLAY THE GAME (Game Loop)
         while (!Raylib.WindowShouldClose())
         {
-            // Update GAMEPLAY
+            //
+            // UPDATE Gameplay
+            //
             if(Raylib.IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
             {
                 isPaused = !isPaused;
             }
 
-            // Update all current objects
+            // Add all objects that are waiting to be alive
+            foreach (var pending in pendingObjects)
+            {
+                gameObjects.Add(pending);
+            }
+            pendingObjects.Clear();
+
+            // Update all current objects - only if the game isn't paused
             if (!isPaused)
             {
                 foreach (var go in gameObjects)
@@ -63,7 +76,16 @@ public class Program
                 }
             }
 
-            // Draw GAMEPLAY
+            // Remove all objects that are marked for destroy
+            foreach (var kill in killObjects)
+            {
+                gameObjects.Remove(kill);
+            }
+            killObjects.Clear();
+
+            //
+            // DRAW Gameplay
+            //
             Raylib.BeginDrawing();
 
             Raylib.ClearBackground(Color.RAYWHITE);
@@ -74,26 +96,17 @@ public class Program
                 go.Draw();
             }
 
+            Raylib.DrawText("WASD for Movement", 20, 10, 20, Color.BLACK);
+            Raylib.DrawText("Q and E for Rotation", 20, 35, 20, Color.BLACK);
+            Raylib.DrawText("1 and 3 for Scaling", 20, 60, 20, Color.BLACK);
+            Raylib.DrawText("F to Spawn Child Minion", 20, 95, 20, Color.BLACK);
+
             Raylib.EndDrawing();
-
-            // Process PENDING OBJECTS
-
-            // Remove all objects that are marked for destroy
-            foreach(var kill in killObjects)
-            {
-                gameObjects.Remove(kill);
-            }
-            killObjects.Clear();
-
-            // Add all objects that are waiting to be alive
-            foreach(var pending in pendingObjects)
-            {
-                gameObjects.Add(pending);
-            }
-            pendingObjects.Clear();
         }
 
-        // Deinitializing - UNLOAD THE THINGS
+        //
+        // TERMINATE Engine
+        //
         Raylib.CloseWindow();
 
         return 0;
