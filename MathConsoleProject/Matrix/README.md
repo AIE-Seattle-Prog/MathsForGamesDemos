@@ -1,5 +1,7 @@
 # Matrix Demo
 
+![](.github/screenshot.png)
+
 The Matrix project is a sample that demonstrates the applicability of the work
 we've done in the Maths for Games subject. Thus far, we've completed the
 following work:
